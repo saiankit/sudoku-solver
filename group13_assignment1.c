@@ -108,6 +108,7 @@ int isPositionValid(int grid[36][36], int x, int y, int possibleNumber, int size
 		}
 	}
 
+
 	// return 1 if the possibleNumber is a valid Number
 	return 1;
 }
@@ -233,22 +234,6 @@ void find_hidden_cell(struct cell optSudoku[36][36], int size, int *x, int *y, i
 							*entry = possible;
 							return;
 						}
-						// if (isNumberPresentInRow == 0) {
-						// 	*x = k;
-						// 	*y = l;
-						// 	*entry = possible;
-						// 	break;
-						// } else if (isNumberPresentInCol == 0) {
-						// 	*x = k;
-						// 	*y = l;
-						// 	*entry = possible;
-						// 	break;
-						// } else if (isNumberPresentInBox == 0) {
-						// 	*x = k;
-						// 	*y = l;
-						// 	*entry = possible;
-						// 	break;
-						// }
 					}
 				}
 			}
@@ -291,6 +276,7 @@ void *backtracker_multithread(void *args) {
 	param = (struct params *)args;
 
 	if (countEmptyCells(param->grid, param->size) == 0) {
+		// backtracker function suceeds here
 		print_grid(param->size, param->grid);
 		solved = 1;
 		return 0;
@@ -300,7 +286,7 @@ void *backtracker_multithread(void *args) {
 	int col = 0;
 	find_next_empty_cell(param->grid, param->size, &row, &col);
 
-	for (int i = 0; i <= param->size; i++) {
+	for (int i = 1; i <= param->size; i++) {
 		if (isPositionValid(param->grid, row, col, i, param->size)) {
 			param->grid[row][col] = i;
 
@@ -318,7 +304,6 @@ void *backtracker_multithread(void *args) {
 			param->grid[row][col] = 0;
 		}
 	}
-
 	return 0;
 }
 
@@ -337,17 +322,12 @@ int countHiddenSingles(struct cell optSudoku[36][36], int size) {
 	for (int k = 0; k < size; ++k) {
 		for (int l = 0; l < size; ++l) {
 			if (optSudoku[k][l].value == 0) {
-				// int isNumberPresentInRow = 0;
-				// int isNumberPresentInCol = 0;
-				// int isNumberPresentInBox = 0;
-				// int ii = 0;
 				for (int possible = 1; possible <= size; ++possible) {
 					if (optSudoku[k][l].possibleValues[possible] != 0) {
 						int ii = 0;
 						int isNumberPresentInRow = 0;
 						int isNumberPresentInCol = 0;
 						int isNumberPresentInBox = 0;
-						// int e = possible;
 						// check in that particular row
 						for (int col = 0; col < size; ++col) {
 							if (optSudoku[k][col].possibleValues[possible] != 0 && (col!=l)) {
@@ -380,6 +360,7 @@ int countHiddenSingles(struct cell optSudoku[36][36], int size) {
 								}
 							}
 						}
+
 						ii = isNumberPresentInRow + isNumberPresentInCol + isNumberPresentInBox;
 						if (ii == 1) {
 							counter++;
@@ -442,13 +423,18 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	}
+
+
 	while (countSingleEntriedCells(optSudoku, size) != 0) {
+
 		int x = 0 ; int y = 0;
 		find_single_cell(optSudoku, size, &x, &y);
 		int e = getEntry(optSudoku, size, x , y);
+
 		optSudoku[x][y].value =  e;
 		optSudoku[x][y].possibleValues[e] = 0;
 		changes++;
+
 		// remove in the whole row
 		for (int k = 0; k < size; ++k) {
 			optSudoku[k][y].possibleValues[e] = 0;
@@ -476,7 +462,9 @@ int main(int argc, char *argv[]) {
 	while (countHiddenSingles(optSudoku, size) != 0) {
 		int x = 0; int y = 0; int e = 0;
 		find_hidden_cell(optSudoku, size, &x, &y, &e);
+
 		optSudoku[x][y].value = e;
+
 		for (int p = 1; p <= size; ++p) {
 			optSudoku[x][y].possibleValues[p] = 0;
 		}
@@ -503,8 +491,7 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	}
-// 	printf("\n");
-// print_gridOpt(size, optSudoku);
+
 	for (int k = 0; k < size; ++k) {
 		for (int l = 0; l < size; ++l) {
 			grid[k][l] = optSudoku[k][l].value;
@@ -551,11 +538,11 @@ int main(int argc, char *argv[]) {
 	// print_grid(size, grid);
 
 	// Uncomment the below lines to get Debug Logs
-	printf("[log]: Total Backtracks : %d\n", backtracks);
-	printf("[log]: Total Changes because of optimisation : %d\n", changes);
-	time = clock() - time;
-	double time_taken = ((double)time) / CLOCKS_PER_SEC;
-	printf("[log]: Code took %f seconds to execute\n", time_taken);
+	// printf("[log]: Total Backtracks : %d\n", backtracks);
+	// printf("[log]: Total Changes because of optimisation : %d\n", changes);
+	// time = clock() - time;
+	// double time_taken = ((double)time) / CLOCKS_PER_SEC;
+	// printf("[log]: Code took %f seconds to execute\n", time_taken);
 	// print_gridOpt(size, optSudoku);
 	if(countEmptyCells(grid, size)==0) {
 		print_grid(size, grid);
